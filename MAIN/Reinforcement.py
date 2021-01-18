@@ -1,7 +1,8 @@
 import tensorflow as tf
 import PROCESSOR.MachineLearning as ML
 from MAIN.Basics import Agent
-
+import random
+random.seed(0)
 
 class ContextualBandit(Agent):
 
@@ -30,6 +31,9 @@ class ContextualBandit(Agent):
         self.action_space  = ML.ActionSpace(self)
         self.reward_engine = ML.RewardEngine(self, reward_engine)
         self.recorder      = ML.Recorder(self)
+
+        # Record action evolution with steps
+        self.net_act_evolution = []
 
     def update_network(self):
         if self.config['AgentIsUpdateNetwork'] is True:
@@ -63,22 +67,38 @@ class ContextualBandit(Agent):
         reward = self.data['ENGINE_REWARD']
         self.data['SAMPLE'] = [[state, action, reward]]
 
-    def process(self, session, save=False, restore=False):
+    def process(self, session, save=False, restore=False, train=True):
         self.set_session(session)
         self.initialize_global()
         if restore is True: self.restore_model()
 
-        while self.epoch_counter.is_ended is False:
-            while self.iter_counter.is_ended is False:
-                self.state_space.process()
-                self.action_space.process()
-                self.reward_engine.process()
-                self.buffering()
-                self.update_network()
-                self.recorder.process()
-                self.iter_counter.step()
-            self.iter_counter.reset()
-            self.epoch_counter.step()
-        self.epoch_counter.reset()
+        if train:
+            while self.epoch_counter.is_ended is False:
+                net_act_evolution_iter = []
+                while self.iter_counter.is_ended is False:
+                    index = random.randint(601, len(self.reward_engine.engine.x) - 1201)
 
-        if save is True: self.save_model()
+                    curr_pri_diff = self.reward_engine.engine.y[index] - self.reward_engine.engine.x[index]
+                    hist_pri_diff = self.reward_engine.engine.hist_pri_diff
+                    curr_env_state = (curr_pri_diff/hist_pri_diff) - 1.
+                    curr_env_state = min(0.1, max(-0.1, curr_env_state))
+                    #curr_env_state = 1.1 - 1.
+                    self.state_space.process(method='binary', env_state=curr_env_state)
+
+                    self.action_space.process()
+                    self.reward_engine.process(index)
+                    self.buffering()
+                    self.update_network()
+                    self.recorder.process()
+                    self.iter_counter.step()                
+                    #net_act_evolution_iter.append(self.data['NETWORK_ACTION']) 
+                    net_act_evolution_iter.append(self.action_space.convert(self.data['NETWORK_ACTION'],'index_to_dict')) 
+                    # Add a convergence check.
+
+                self.iter_counter.reset()
+                self.epoch_counter.step()
+                self.net_act_evolution.append(net_act_evolution_iter)
+
+            self.epoch_counter.reset()
+
+            if save is True: self.save_model()

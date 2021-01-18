@@ -1,0 +1,2 @@
+model_checkpoint_path: "cointegration.ckpt"
+all_model_checkpoint_paths: "cointegration.ckpt"

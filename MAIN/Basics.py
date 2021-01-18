@@ -1,6 +1,7 @@
 import tensorflow as tf
 import itertools
 import random
+random.seed(0)
 import numpy as np
 import abc
 from os import path

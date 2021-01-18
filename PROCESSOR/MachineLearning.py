@@ -1,5 +1,7 @@
 import random
+random.seed(0)
 import numpy as np
+np.random.seed(0)
 from MAIN.Basics import Processor, Space
 from operator import itemgetter
 
@@ -10,19 +12,33 @@ class StateSpace(Processor, Space):
         self.agent = agent
         super().__init__(agent.config['StateSpaceState'])
 
-    def process(self):
-        self.agent.data['NETWORK_STATE'] = self._get_network_input()
+    def process(self, method, env_state):
+        self.agent.data['NETWORK_STATE'] = self._get_network_input(method, env_state)
         self.agent.data['ENGINE_STATE' ] = self._get_engine_input()
 
-    def _get_network_input(self):
-        method = self.agent.config['StateSpaceNetworkSampleType']
-        state  = self.get_random_sample(method)
-        return state
+    def _get_network_input(self, method, env_state):
+        if method == 'stateless':
+            method = self.agent.config['StateSpaceNetworkSampleType']
+            state  = self.get_random_sample(method)
+            state = 0
+            return state
+        elif method == 'binary':
+
+            method = self.agent.config['StateSpaceNetworkSampleType']
+            state  = self.get_random_sample(method)
+            #state = 0
+            state = env_state
+            return state
+        else:
+            raise ValueError('method should be stateless/binary')
+       
 
     def _get_engine_input(self):
-        method = self.agent.config['StateSpaceEngineSampleConversion']
-        state  = self.agent.data['NETWORK_STATE']
-        state  = self.convert(state, method)
+        #method = self.agent.config['StateSpaceEngineSampleConversion']
+        #state  = self.agent.data['NETWORK_STATE']
+        #state  = self.convert(state, method)
+        # Input of the state space to the network is just a conversion (ex. index_to_dict) of that input to the network.
+        state = {'transaction_cost': [0.001]}
         return state
 
 
@@ -59,15 +75,18 @@ class RewardEngine(Processor):
         self.engine = engine
         self.agent  = agent
 
-    def process(self):
-        reward, record = self._get_reward()
+    #def process(self):
+    def process(self, index):
+        #reward, record = self._get_reward()
+        reward, record = self._get_reward(index)
         self.agent.data['ENGINE_REWARD'] = reward
         self.agent.data['ENGINE_RECORD'] = record
 
-    def _get_reward(self):
+    #def _get_reward(self):
+    def _get_reward(self, index):
         state  = self.agent.data['ENGINE_STATE']
         action = self.agent.data['ENGINE_ACTION']
-        self.engine.process(**state, **action)
+        self.engine.process(index=index, **state, **action)
         return self.engine.reward, self.engine.record
 
 

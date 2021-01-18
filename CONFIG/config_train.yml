@@ -15,13 +15,15 @@ AgentIsUpdateNetwork: True
 ExplorationMethod: boltzmann
 ExplorationBoltzmannProbAttribute: prob_dist
 ExplorationCounter: Counter_4
+#ExplorationMethod: e_greedy
+#ExplorationCounter: Counter_3
 
 
-AgentModelSaverSavePath: ./STATICS/CKPT
+AgentModelSaverSavePath: ./SavedModel
 AgentModelSaverSaveName: cointegration
 
 
-AgentModelSaverRestorePath: ./STATICS/CKPT
+AgentModelSaverRestorePath: ./SavedModel
 AgentModelSaverRestoreName: cointegration
 
 
@@ -39,7 +41,8 @@ Counter:
   Counter_1:
     name: Epoch
     start_num: 0
-    end_num: 10
+    end_num: 3
+    #end_num: 1 # MTR (Ref. case)
     step_size: 1
     n_buffer: 0
     is_descend: False
@@ -47,24 +50,25 @@ Counter:
   Counter_2:
     name: Iteration
     start_num: 0
-    end_num: 10000
+    end_num: 6000
     step_size: 1
-    n_buffer: 10000
+    n_buffer: 1000
     is_descend: False
     print_freq: 1000
+    
   Counter_3:
     name: EGreedyProb
     start_num: 1
-    end_num: 0.1
-    step_size: 0.0001
-    n_buffer: 30000
+    end_num: 0.01
+    step_size: 0.001
+    n_buffer: 1000
     is_descend: True
-    print_freq:
+    print_freq: 100
   Counter_4:
     name: BoltzmannTemp
     start_num: 1
-    end_num: 0.2
-    step_size: 0.0001
-    n_buffer: 30000
+    end_num: 0.01
+    step_size: 0.001
+    n_buffer: 1000
     is_descend: True
-    print_freq:
+    print_freq: 100
