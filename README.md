@@ -12,7 +12,6 @@ https://github.com/wai-i/Pair-Trading-Reinforcement-Learning/issues/8.
 
 In the original repo, random number generators were not 
 properly seeded, so the results were not reproducible. 
-This commit fixed that problem.
 
 Extending from stateless to contextual bandit allows 
 the agent to adjust the trading parameters according 
@@ -28,14 +27,16 @@ allowed to have more states.
 
 I separated training and back-testing parts because it 
 allows one to isolate potential problems better. 
-At the end of the training, the TensorFlow graph is saved 
-and then restored in back-testing.
+The TensorFlow graph is saved at the end of the training, 
+and restored in back-testing.
 
 Also, price data for the top 50 indices in each of the 
 top three S&P500 sectors are downloaded (from Tiingo) 
 into the working directory. 
 
+End of my contributions section.
 
+####################################################################
 <p align="center">
   <img width="600" src="Structure.PNG">
 </p>
